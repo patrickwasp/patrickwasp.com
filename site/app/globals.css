@@ -1,0 +1,275 @@
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Background: #FAFAFA */
+  --background: oklch(1 0 0);
+  /* Text primary: pure black */
+  --foreground: oklch(0.2 0 0);
+  /* Surface: #FFFFFF cards/panels */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0 0);
+  /* Primary Purple: #5A2A82 headings, links, key UI */
+  --primary: oklch(0.38 0.15 300);
+  --primary-foreground: oklch(1 0 0);
+  /* Purple soft: #E9E0F2 subtle fills, highlights */
+  --secondary: oklch(0.91 0.04 300);
+  --secondary-foreground: oklch(0.38 0.15 300);
+  /* Purple soft for muted backgrounds */
+  --muted: oklch(0.91 0.04 300);
+  /* Text muted: #6B6B75 secondary text */
+  --muted-foreground: oklch(0.48 0.02 280);
+  /* Accent Gold: #C6A75E emphasis, hover, markers */
+  --accent: oklch(0.72 0.08 75);
+  --accent-foreground: oklch(0.2 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.91 0.04 300);
+  --input: oklch(0.91 0.04 300);
+  --ring: oklch(0.38 0.15 300);
+  --radius: 0.75rem;
+}
+
+.dark {
+  /* Background: #121216 near-black */
+  --background: oklch(0.10 0.01 270);
+  /* Text primary: pure white */
+  --foreground: oklch(0.95 0 0);
+  /* Surface: #1A1A20 cards/panels */
+  --card: oklch(0.13 0.01 270);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.13 0.01 270);
+  --popover-foreground: oklch(0.95 0 0);
+  /* Primary Purple: #7B4BB3 lifted purple */
+  --primary: oklch(60.377% 0.14041 302.46);
+  --primary-foreground: oklch(0.10 0.01 270);
+  /* Purple soft: #2A1F3D subtle fills, highlights */
+  --secondary: oklch(0.18 0.05 300);
+  --secondary-foreground: oklch(0.92 0.01 270);
+  /* Purple soft for muted backgrounds */
+  --muted: oklch(0.18 0.05 300);
+  /* Text muted: #A0A0AA secondary text */
+  --muted-foreground: oklch(0.68 0.01 270);
+  /* Accent Gold: #D6BC73 softened gold */
+  --accent: oklch(0.78 0.08 75);
+  --accent-foreground: oklch(0.10 0.01 270);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.18 0.05 300);
+  --input: oklch(0.18 0.05 300);
+  --ring: oklch(0.50 0.15 300);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply bg-background;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Syntax highlighting styles */
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  background: #f6f8fa;
+  color: #24292e;
+}
+
+.dark .hljs {
+  background: #161b22;
+  color: #f0f6fc;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+  color: #d73a49;
+}
+
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-subst {
+  color: #ff7b72;
+}
+
+.hljs-string,
+.hljs-doctag {
+  color: #032f62;
+}
+
+.dark .hljs-string,
+.dark .hljs-doctag {
+  color: #a5d6ff;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+  color: #6f42c1;
+  font-weight: bold;
+}
+
+.dark .hljs-title,
+.dark .hljs-section,
+.dark .hljs-selector-id {
+  color: #d2a8ff;
+  font-weight: bold;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-meta {
+  color: #6a737d;
+}
+
+.dark .hljs-comment,
+.dark .hljs-quote,
+.dark .hljs-meta {
+  color: #8b949e;
+}
+
+/* rehype-pretty-code styles */
+.prose pre {
+  background: transparent;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.prose figure[data-rehype-pretty-code-figure] pre {
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  border: 1px solid;
+  background: var(--shiki-light-bg, #f6f8fa);
+  border-color: #d0d7de;
+  color: var(--shiki-light, #24292e);
+}
+
+.dark .prose figure[data-rehype-pretty-code-figure] pre {
+  background: var(--shiki-dark-bg, #0d1117);
+  border-color: #30363d;
+  color: var(--shiki-dark, #e6edf3);
+}
+
+.prose figure[data-rehype-pretty-code-figure] pre>code {
+  display: grid;
+  background: transparent;
+  color: inherit;
+}
+
+/* Apply Shiki token colors (including comments) */
+.prose figure[data-rehype-pretty-code-figure] code[data-theme] span {
+  color: var(--shiki-light, #24292e);
+}
+
+.dark .prose figure[data-rehype-pretty-code-figure] code[data-theme] span {
+  color: var(--shiki-dark, #e6edf3);
+}
+
+.prose pre code {
+  counter-reset: line;
+}
+
+.prose pre code>[data-line]::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 1rem;
+  margin-right: 1.5rem;
+  text-align: right;
+  color: #6e7681;
+}
+
+.prose pre code[data-line-numbers-max-digits="2"]>[data-line]::before {
+  width: 1.5rem;
+}
+
+.prose pre code[data-line-numbers-max-digits="3"]>[data-line]::before {
+  width: 2rem;
+}
+
+/* Inline code styles (single backticks) */
+.prose :not(pre)>code {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-weight: 600;
+  white-space: nowrap;
+  counter-reset: none;
+}
+
+.dark .prose :not(pre)>code {
+  background-color: #2e1065;
+  color: #c4b5fd;
+}
+
+.prose :not(pre)>code::before,
+.prose :not(pre)>code::after {
+  content: none !important;
+}
+
+/* Prevent line numbers in inline code */
+.prose :not(pre)>code>[data-line]::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Reduce spacing between list items */
+.prose ul>li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+.prose ol>li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+/* Nested lists should have even less spacing */
+.prose ul ul,
+.prose ul ol,
+.prose ol ul,
+.prose ol ol {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}

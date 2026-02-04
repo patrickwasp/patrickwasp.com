@@ -1,0 +1,219 @@
+---
+title: "Create your own COCO-style datasets"
+date: "2018-04-13"
+description: "Learn how to convert your dataset into one of the most popular annotated image formats used today."
+image: "/blog/create-your-own-coco-style-dataset/assets/custom-coco.png"
+tags: ["computer-vision", "coco", "machine-learning"]
+draft: false
+---
+
+Learn how to convert your dataset into one of the most popular annotated image formats used today.
+
+In today’s world of deep learning if data is King, making sure it’s in the right
+format might just be Queen. Or at least Jack or 10. Anyway, it’s pretty
+important. After working hard to collect your images and annotating all the objects,
+you have to decide what format you’re going to use to store all that info. This
+may not seem like a big decision compared to all the other things you have to
+worry about, but if you want to quickly see how different models perform on your
+data, it’s vital to get this step right.
+
+Back in 2014 Microsoft created a dataset called COCO (Common Objects in COntext)
+to help advance research in object recognition and scene understanding. COCO
+was one of the first large scale datasets to annotate objects with more than just
+bounding boxes, and because of that it became a popular benchmark to use when
+testing out new detection models. The format COCO uses to store annotations has
+since become a de facto standard, and if you can convert your dataset to its
+style, a whole world of state-of-the-art model implementations opens up.
+
+This is where [pycococreator](https://github.com/waspinator/pycococreator/) comes in.
+pycococreator takes care of all the annotation formatting details and will help
+convert your data into the COCO format. Let’s see how to use it by working with
+a toy dataset for detecting squares, triangles, and circles.
+
+![Example shape image and object masks](/blog/create-your-own-coco-style-dataset/assets/shapes_example.png)
+
+The shapes dataset has 500 128x128px jpeg images of random colored and sized
+circles, squares, and triangles on a random colored background. It also has binary
+mask annotations encoded in png of each of the shapes. This binary mask format
+is fairly easy to understand and create. That’s why it’s the format your dataset
+needs to be in before you can use pycococreator to create your COCO-styled
+version. You might be thinking, “why not just use the png binary mask format if it’s
+so easy to understand.” Remember, the whole reason we’re trying to make a COCO
+dataset isn’t because it’s the best way of representing annotated images, but
+because everyone else is using it.
+
+The example script we’ll use to create the COCO-style dataset expects your
+images and annotations to have the following structure:
+
+```
+shapes
+│
+└───train
+    │ 
+    └───annotations
+    │    │ <image_id>_<object_class_name>_<annotation_id>.png
+    │    │ ...
+    │   
+    └───<subset><year>
+         │   <image_id>.jpeg
+         │   ...
+
+```
+
+In the shapes example, `subset` is “shapes_train”, `year` is “2018”, and
+`object_class_name` is “square”, “triangle”, or “circle”. You would generally
+also have separate “validate” and “test” datasets.
+
+COCO uses JSON (JavaScript Object Notation) to encode information about a
+dataset. There are several variations of COCO, depending on if its being used for
+object instances, object keypoints, or image captions. We’re interested in the
+object instances format which goes something like this:
+
+```
+{
+  "info": info,
+  "licenses": [license],
+  "categories": [category],
+  "images": [image],
+  "annotations": [annotation]
+}
+```
+
+The “info”, “licenses”, “categories”, and “images” lists are straightforward to
+create, but the “annotations” can be a bit tricky. Luckily we have pycococreator
+to handle that part for us. Let’s start out by getting the easy stuff out of
+the way first. We’ll describe our dataset using python lists and dictionaries and
+later export them to json.
+
+```python
+INFO = {
+    "description": "Example Dataset",
+    "url": "https://github.com/waspinator/pycococreator",
+    "version": "0.1.0",
+    "year": 2018,
+    "contributor": "waspinator",
+    "date_created": datetime.datetime.utcnow().isoformat(' ')
+}
+
+LICENSES = [
+    {
+        "id": 1,
+        "name": "Attribution-NonCommercial-ShareAlike License",
+        "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/"
+    }
+]
+
+CATEGORIES = [
+    {
+        'id': 1,
+        'name': 'square',
+        'supercategory': 'shape',
+    },
+    {
+        'id': 2,
+        'name': 'circle',
+        'supercategory': 'shape',
+    },
+    {
+        'id': 3,
+        'name': 'triangle',
+        'supercategory': 'shape',
+    },
+]
+```
+
+Okay, with the first three done we can continue with images and annotations. All
+we have to do is loop through each image jpeg and its corresponding annotation
+pngs and let pycococreator generate the correctly formatted items. Lines 90 and
+91 create our image entries, while lines 112-114 take care of annotations.
+
+```python
+# filter for jpeg images
+for root, _, files in os.walk(IMAGE_DIR):
+    image_files = filter_for_jpeg(root, files)
+
+    # go through each image
+    for image_filename in image_files:
+        image = Image.open(image_filename)
+        image_info = pycococreatortools.create_image_info(
+            image_id, os.path.basename(image_filename), image.size)
+        coco_output["images"].append(image_info)
+
+        # filter for associated png annotations
+        for root, _, files in os.walk(ANNOTATION_DIR):
+            annotation_files = filter_for_annotations(root, files, image_filename)
+
+            # go through each associated annotation
+            for annotation_filename in annotation_files:
+
+                if 'square' in annotation_filename:
+                    class_id = 1
+                elif 'circle' in annotation_filename:
+                    class_id = 2
+                else:
+                    class_id = 3
+
+                category_info = {'id': class_id, 'is_crowd': 'crowd' in image_filename}
+                binary_mask = np.asarray(Image.open(annotation_filename)
+                    .convert('1')).astype(np.uint8)
+
+                annotation_info = pycococreatortools.create_annotation_info(
+                    segmentation_id, image_id, category_info, binary_mask,
+                    image.size, tolerance=2)
+                if annotation_info is not None:
+                    coco_output["annotations"].append(annotation_info)
+```
+
+There are two types of annotations COCO supports, and their format depends on
+whether the annotation is of a single object or a “crowd” of objects. Single
+objects are encoded using a list of points along their contours, while crowds are
+encoded using column-major RLE (Run Length Encoding). RLE is a compression method
+that works by replaces repeating values by the number of times they repeat. For
+example `0 0 1 1 1 0 1` would become `2 3 1 1`. Column-major just means that
+instead of reading a binary mask array left-to-right along rows, we read them
+up-to-down along columns.
+
+The `tolerance` option in `pycococreatortools.create_annotation_info()` changes
+how precise contours will be recorded for individual objects. The higher the
+number, the lower the quality of annotation, but it also means a lower file size.
+2 is usually a good value to start with.
+
+After creating your COCO-style dataset you can test it out by visualizing it
+using the [COCO API](https://github.com/cocodataset/cocoapi). Using the example
+[Jupyter Notebook in the pycococreator repo](https://github.com/waspinator/pycococreator/blob/master/examples/shapes/visualize_coco.ipynb), you should see something like this:
+
+<Image src="/blog/create-your-own-coco-style-dataset/assets/square_coco.png" alt="Example output using the COCO API" scale={50} />
+
+You can find the full script used to convert the shapes dataset along with
+pycococreator itself on [github](https://github.com/waspinator/pycococreator/).
+
+If you want to try playing around with the shape dataset yourself, download it
+here: [shapes_train_dataset](https://patrickwasp.com/wp-content/uploads/2018/04/shapes_train_dataset.zip).
+
+Now you’re ready to convert your own dataset into the COCO format and begin
+experimenting with the latest advancements in computer vision. Take a look below for
+links to some of the amazing models using COCO.
+
+## References and Resources
+
+- [pycococreator](https://github.com/waspinator/pycococreator/)
+- COCO
+  - [Original Microsoft COCO paper](https://arxiv.org/abs/1405.0312)
+  - [COCO dataset website](http://cocodataset.org/)
+  - [COCO API](https://github.com/cocodataset/cocoapi)
+- Annotation tools
+  - [Label Me](https://github.com/CSAILVision/LabelMeAnnotationTool)
+  - [js-segment-annotator](https://github.com/kyamagu/js-segment-annotator)
+  - [VGG Image Annotator](https://gitlab.com/vgg/via/)
+  - [Image Eraser](https://github.com/AKSHAYUBHAT/ImageSegmentation)
+- Deep learning implementations with COCO support
+  - [Deep Learning Explorer](https://github.com/waspinator/deep-learning-explorer/tree/master/mask-rcnn)
+  - [Facebook Detectron](https://github.com/facebookresearch/Detectron)
+  - [Google DeepLab](https://github.com/tensorflow/models/tree/master/research/deeplab)
+  - [Matterport Mask RCNN](https://github.com/matterport/Mask_RCNN)
+  - [YOLO](https://github.com/madhawav/YOLO3-4-Py)
+  - [Luminoth](https://github.com/tryolabs/luminoth)
+
+## Additional Links
+
+- [Next post: Train a Mask R-CNN model on your own data](https://patrickwasp.com/train-a-mask-r-cnn-model-on-your-own-dataset/)

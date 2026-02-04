@@ -1,0 +1,77 @@
+name: Deploy static site to cPanel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    env:
+      CPANEL_HOST: rssd3234.webaccountserver.com
+      CPANEL_USER: bivulflx
+      CPANEL_SSH_PORT: "52836"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: |
+          cd site
+          pnpm install
+
+      - name: Build site
+        run: |
+          cd site
+          pnpm build
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.CPANEL_SSH_KEY }}
+
+      - name: Deploy static site to public_html
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          REMOTE_BASE="/home/${CPANEL_USER}/public_html"
+          echo "Deploying static site to: ${REMOTE_BASE}"
+
+          # Ensure folder exists
+          ssh -p "${CPANEL_SSH_PORT}" -o StrictHostKeyChecking=no \
+            "${CPANEL_USER}@${CPANEL_HOST}" \
+            "mkdir -p '${REMOTE_BASE}'"
+
+          # Sync site/out/* to public_html
+          rsync -azv --delete --stats \
+            -e "ssh -p ${CPANEL_SSH_PORT} -o StrictHostKeyChecking=no" \
+            site/out/ \
+            "${CPANEL_USER}@${CPANEL_HOST}:${REMOTE_BASE}/"
+
+      - name: Deployment summary
+        shell: bash
+        run: |
+          echo "### ✓ Deployment Complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "🌐 **Live URL:** https://patrickwasp.com/" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Deployed from:** \`${{ github.ref }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Commit:** \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
