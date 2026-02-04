@@ -13,11 +13,6 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      CPANEL_HOST: rssd3234.webaccountserver.com
-      CPANEL_USER: bivulflx
-      CPANEL_SSH_PORT: "52836"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -52,6 +47,9 @@ jobs:
         run: |
           set -euo pipefail
 
+          CPANEL_HOST="${{ secrets.CPANEL_HOST }}"
+          CPANEL_USER="${{ secrets.CPANEL_USER }}"
+          CPANEL_SSH_PORT="${{ secrets.CPANEL_SSH_PORT }}"
           REMOTE_BASE="/home/${CPANEL_USER}/public_html"
           echo "Deploying static site to: ${REMOTE_BASE}"
 
