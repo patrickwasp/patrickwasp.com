@@ -42,7 +42,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.CPANEL_SSH_KEY }}
 
-      - name: Deploy static site to public_html
+      - name: Deploy static site to patrickwasp.com
         shell: bash
         run: |
           set -euo pipefail
@@ -50,7 +50,7 @@ jobs:
           CPANEL_HOST="${{ secrets.CPANEL_HOST }}"
           CPANEL_USER="${{ secrets.CPANEL_USER }}"
           CPANEL_SSH_PORT="${{ secrets.CPANEL_SSH_PORT }}"
-          REMOTE_BASE="/home/${CPANEL_USER}/public_html"
+          REMOTE_BASE="/home/${CPANEL_USER}/patrickwasp.com"
           echo "Deploying static site to: ${REMOTE_BASE}"
 
           # Ensure folder exists
@@ -58,7 +58,7 @@ jobs:
             "${CPANEL_USER}@${CPANEL_HOST}" \
             "mkdir -p '${REMOTE_BASE}'"
 
-          # Sync site/out/* to public_html
+          # Sync site/out/* to patrickwasp.com
           rsync -azv --delete --stats \
             -e "ssh -p ${CPANEL_SSH_PORT} -o StrictHostKeyChecking=no" \
             site/out/ \
