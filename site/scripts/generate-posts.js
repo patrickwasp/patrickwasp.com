@@ -39,30 +39,30 @@ function calculateReadingTime(content) {
 function generateSearchText(content, frontmatter) {
     // Remove import/export lines
     let text = content.replace(/^(import|export)\s+.+$/gm, "");
-    
+
     // Remove JSX tags while preserving inner text
     text = text.replace(/<[^>]+>/g, " ");
-    
+
     // Remove code blocks
     text = text.replace(/```[\s\S]*?```/g, " ");
     text = text.replace(/`[^`]+`/g, " ");
-    
+
     // Remove markdown links but keep text
     text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-    
+
     // Remove markdown headings markers
     text = text.replace(/^#{1,6}\s+/gm, "");
-    
+
     // Remove list markers
     text = text.replace(/^[\*\-]\s+/gm, "");
     text = text.replace(/^\d+\.\s+/gm, "");
-    
+
     // Collapse whitespace
     text = text.replace(/\s+/g, " ").trim();
-    
+
     // Extract tag display names
     const tagNames = frontmatter.tags ? frontmatter.tags.map(t => t.display).join(" ") : "";
-    
+
     // Combine with frontmatter fields
     const parts = [
         frontmatter.title,
@@ -70,7 +70,7 @@ function generateSearchText(content, frontmatter) {
         tagNames,
         text
     ];
-    
+
     return parts.join(" ").toLowerCase();
 }
 
@@ -101,17 +101,17 @@ function parsePostFrontmatter(data, slug) {
     }
 
     const image = typeof data.image === "string" ? data.image.trim() : undefined;
-    
+
     // Normalize tags with both display name and slug
     const rawTags = Array.isArray(data.tags)
         ? data.tags.filter((t) => typeof t === "string" && t.trim())
         : [];
-    
+
     const tags = rawTags.map((tag) => ({
         display: tag.trim(),
         slug: slugifyTag(tag)
     }));
-    
+
     const draft = typeof data.draft === "boolean" ? data.draft : false;
 
     return {
@@ -195,7 +195,7 @@ function generateMetadataIndex(postsMetadata) {
     const tagMap = new Map();
     sorted.forEach(({ slug, frontmatter }) => {
         if (!frontmatter.tags) return;
-        
+
         frontmatter.tags.forEach((tag) => {
             if (!tagMap.has(tag.slug)) {
                 tagMap.set(tag.slug, {
@@ -345,7 +345,7 @@ function generateAll() {
 
 function watchMode() {
     console.log("\n👀 Watching for changes in content/posts...\n");
-    
+
     let timeout;
     const debounce = (fn, delay) => {
         return (...args) => {
@@ -374,7 +374,7 @@ function main() {
     const isWatch = args.includes("--watch") || args.includes("-w");
 
     const success = generateAll();
-    
+
     if (!success) {
         process.exit(1);
     }
