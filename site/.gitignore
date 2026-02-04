@@ -19,6 +19,7 @@
 
 # generated content
 /generated/
+/public/blog/
 
 # production
 /build
