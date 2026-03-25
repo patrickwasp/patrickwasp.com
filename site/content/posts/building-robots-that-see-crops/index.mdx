@@ -1,0 +1,68 @@
+---
+title: "Building Robots That See Crops"
+date: "2026-03-25"
+description: "A look back at building perception and robotics systems for agriculture at Ecoation and SmartPix Robotics."
+tags: ["robotics", "computer-vision", "agriculture"]
+image: "/blog/building-robots-that-see-crops/assets/patrick_treetrak.png"
+draft: false
+---
+
+import { YouTubeEmbed } from '@/components/mdx/YouTubeEmbed'
+
+Over the past several years I had the chance to work on something unusually tangible in the world of software and robotics. At Ecoation and later at SmartPix Robotics, I helped build machines that move through living environments and turn raw visual sensing into useful agricultural data. These systems were deployed in real production settings like greenhouses, orchards, and tree nurseries, where reliability mattered more than theoretical performance and where our engineering decisions were tested daily by dust, humidity, inconsistent lighting, and all the other fun surprises that come with outdoor environments.
+
+This post is a look back at that work. The technical challenges, the product thinking, and the lessons I picked up from building robotics systems at agricultural scale.
+
+## Sensing While You Work
+
+Modern agriculture already involves a lot of structured movement through crops. Workers scout greenhouse rows, tractors drive orchard lanes, and teams monitor plant health by hand. The core idea behind both products I worked on was simple but powerful: if machines are already moving through the environment, they can collect high-quality data continuously.
+
+Instead of treating sensing as a separate task, we integrated it right into routine workflows.
+
+In greenhouses, that meant building Roya, an autonomous scouting robot that could pre-scan plant rows and flag areas needing attention before human scouts even arrived. The idea wasn't to replace human expertise, but to focus it. Instead of checking every single plant, your scouting team could jump straight to the sections that actually needed help.
+
+Roya is equipped with cameras and sensors that capture plant data as it moves through greenhouse rows. The lower camera system picks up visual information like fruit count and leaf health. The upper camera uses spectral and thermal sensors to see things invisible to the human eye, like early signs of disease or water stress. It runs on its own over night, and when the mission is done, all the data automatically uploads to the cloud.
+
+<YouTubeEmbed src="https://www.youtube.com/embed/ZC5BqCG3TxU?si=ra-hqYHK_zBeAHPe" title="Roya - Automated Greenhouse Scouting" />
+
+In orchards and tree nurseries, I applied the same philosophy at a larger geographic scale with TreeTrak. TreeTrak mounts directly onto a tractor's front hitch. So while you're doing normal operations like mowing or fertilizing, it captures structural measurements of your trees automatically. You don't have to set aside extra time for inventory. You just drive your rows like you always do, and by the time you're back at the office, the data is already waiting online.
+
+<YouTubeEmbed src="https://www.youtube.com/embed/houpYZdrWKg?si=MstwTBxvZJrer89d" title="TreeTrak - Automated Orchard and Tree Nursery Inventory" />
+
+This product direction, embedding sensing into existing workflows, had a big influence on the engineering architecture of both systems.
+
+## Making Sensors Work in the Real World
+
+One of the central challenges across both products was building multi-sensor perception pipelines that actually worked outside of controlled lab conditions.
+
+The greenhouse scouting platform combined several different sensing modalities. RGB imaging handled visual characteristics like fruit count and leaf appearance. Spectral sensing could detect stress indicators that you'd never catch with your eyes alone. And thermal sensing estimated plant surface temperature, useful for catching early signs of disease or water imbalance.
+
+All of these sensors had to operate while the robot autonomously navigated narrow greenhouse rows, often under shifting lighting conditions and variable plant density. From a systems perspective, that meant dealing with careful synchronization of different sensor streams, efficient video ingestion and serialization, real-time processing on limited onboard compute, and robust handling of multi-hour continuous missions.
+
+In orchards the perception challenge shifted toward scale and geometric precision. TreeTrak focused on structural measurements like tree diameter and height, which meant we needed high-accuracy GNSS positioning, repeatable spatial mapping across large outdoor fields, and efficient generation of inventory-level analytics. The pipeline had to transform raw positional and imaging data into actionable insights shortly after collection, so growers could actually use it before their next pass through the rows.
+
+## Getting Data from the Field to the Screen
+
+Another big part of this work was bridging the gap between what happens at the edge (on the robot, in the field) and what growers actually need on their screens.
+
+Both systems were designed so that data collected in the field would automatically sync to cloud platforms where growers could visualize farm-wide conditions, filter and explore crop metrics, and generate reports. In the greenhouse, Roya's scouting reports summarized average plant health scores and highlighted specific rows and posts that needed investigation. You could click on any location in the interactive map and see exactly what Roya saw, down to individual leaves. A built-in AI assistant would analyze patterns and suggest treatment options.
+
+In orchard deployments, TreeTrak's dashboard let farm managers explore their tree populations interactively. Filter by diameter, height, or whatever property you care about. Zoom into blocks to see every tree. And generate detailed reports without much friction.
+
+Designing these workflows pushed the work well beyond just robotics. We had to think about distributed data pipelines, storage strategies for high-volume image datasets, analytics interfaces that made sense to growers (not just engineers), and AI interpretation layers that added value without getting in the way. It became clear pretty quickly that robotics products don't succeed just through autonomy. They succeed by closing the loop from sensing to insight to decision.
+
+## What I Learned
+
+Reliability beats sophistication. In agricultural environments, uptime and predictability are way more valuable than cutting-edge algorithms. A system that works every day under imperfect conditions creates more value than one that achieves peak performance only when everything is ideal. We spent a lot of time making sure things just worked, day after day, even when conditions weren't perfect.
+
+The real goal is human-machine collaboration. These systems were most effective when positioned as tools that augment the expertise of growers and scouts, not as replacements. Roya didn't try to diagnose every plant problem on its own. It gave scouts better information so they could make better decisions faster. That framing shaped a lot of the product and engineering choices we made.
+
+Data infrastructure is just as important as autonomy. Capturing large volumes of field data is only useful if you can structure it, query it, visualize it, and trust it. This pushed my work increasingly toward end-to-end data architecture rather than purely onboard robotics software. Building a great robot doesn't matter much if the data it collects just sits in a bucket somewhere.
+
+And finally, deployment environments shape architecture in ways you don't fully appreciate until you're in them. Power budgets, navigation constraints, connectivity limitations, and maintenance realities all fundamentally influence system design. Greenhouses, orchards, and nurseries each have their own set of constraints, and engineering for them requires thinking about the whole system at once.
+
+## Looking Back
+
+My time at Ecoation and SmartPix Robotics shaped how I think about robotics and applied AI. It taught me to build systems that integrate into existing workflows instead of fighting them, to prioritize things that actually deliver value over things that just look impressive, and to think about the entire path from data collection to decision-making.
+
+Most importantly, it showed me that impactful robotics is rarely about single breakthroughs. It's about thoughtful system design, iteration in real environments, and close collaboration with the people who depend on the technology every day.
